@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<title>Hello from Mark</title>
+
+<!-- CoucDB scripts -->
+	<script src="http://127.0.0.1:5984/_all_dbs/_utils/script/json2.js"></script>				<!-- couchDB js include -->
+    <script src="http://127.0.0.1:5984/_all_dbs/_utils/script/jquery.js?1.2.6"></script>		<!-- ditto -->
+    <script src="http://127.0.0.1:5984/_all_dbs/_utils/script/jquery.couch.js?0.8.0"></script><!-- ditto -->
+    <script src="http://127.0.0.1:5984/_all_dbs/_utils/script/jquery.form.js?0.9.0"></script>	<!-- ditto -->
+
+<script type="text/javascript">						<!-- CouchDB code/script -->
+$.fn.serializeObject = function()						<!-- serializeObject form => json -->
+	{
+		var o = {};							<!-- json object -->
+		var a = this.serializeArray();					<!-- form object as array -->
+		$.each(a, function() {						<!-- for each array item -->
+			if (o[this.name] !== undefined) {			<!-- if the value of this form field is undefined aka does not exist -->
+				if (!o[this.name].push) {			<!-- push this form field into the json object -->
+					o[this.name] = [o[this.name]];
+				}
+				o[this.name].push(this.value || '');		<!-- push the value into the json object -->
+			} else {
+				o[this.name] = this.value || '';
+			}
+		});
+		return o;							<!-- return json object -->
+	};
+
+$(function() {
+	$('form').submit(function(e) {						<!-- ignore the default submit action -->
+	e.preventDefault();
+		$.couch.db("contact").saveDoc({}, {				<!-- change db name from "test" to your db name and 
+													<!-- use saveDoc to get id and rev -->
+		success: function(data) {
+			$('#_id').val(data.id);					<!-- set id and rev in form -->
+			$('#_rev').val(data.rev);
+			$("#result").html(data);
+			var doc=JSON.stringify($('form').serializeObject());	<!-- change the form into a json object -->
+			$.couch.db("contact").saveDoc( JSON.parse(doc) , {		<!-- save the form data into the couchDB doc -->
+				success: function(udata) { 
+					$("#result").html(udata);	
+					$('#_rev').val(udata.rev);		<!-- update rev in form field -->
+					$('#form').ajaxSubmit({			<!-- attach file in form to document in couchDB -->
+						url: "http://127.0.0.1:5984/contact/"+$('#_id').val() ,
+						success: function(response) {
+						$("#result").html(response);},
+						error: function(status) {
+						$("#result").html(response);}
+					});
+				},
+				error: function(status) {
+				$("#result").html(status);
+			}
+			});
+		},
+		error: function(status) {
+		$("#result").html(status);
+		}
+		});
+	});
+});
+
+</script>
+
+</head>
+<body>
+
+<!-- Contact Section -->
+    <section id="contact">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="section-heading">Contact Us</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <form name="sentMessage" method="POST" id="form" name="form" action="" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="text" name="_id" id="_id" placeholder="Document ID (read only)" class="form-control">
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" name="_rev" id="_rev" placeholder="Revision ID (read only)" class="form-control">
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" name="appName" id="appName" placeholder="Application Name" class="form-control">
+                                    <p class="help-block text-danger"></p>
+                                </div>
+								<div class="form-group">
+                                    <input type="text" name="docId" id="docId" placeholder="Document ID" class="form-control"/>
+                                    <p class="help-block text-danger"></p>
+                                </div>
+								<div class="form-group">
+                                    <input type="file" name="_attachments" id="_attachments" multiple="multiple" class="form-control"/>
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                            <div class="col-lg-12 text-center">
+                                <div id="success"></div>
+                                <button type="submit" class="btn btn-xl" value="submit">Send Message</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+			<div id="result">
+			</div>
+        </div>
+    </section>
+
+</body>
+</html>
+

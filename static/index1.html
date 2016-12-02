@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+    $("#londonbutton").click(function(){
+        $.get("/london", function(data, status){
+		$("#city").text(data);
+        });
+    });
+});
+$(document).ready(function(){
+    $("#parisbutton").click(function(){
+        $.get("http://127.0.0.1:5984/emails/3109610f-ede6-432b-9e7c-6826bc830cee", function(data, status){
+		
+		$("#city").text(data.content);
+        });
+    });
+});
+
+
+</script>
+   </head>
+   <body>
+   
+   <input type="submit" name="London" id="londonbutton" value="Update London">
+ <input type="submit" name="Paris" id="parisbutton" value="Update Paris">
+    <input type="submit" name="Japan" id="japanbutton" value="Update Japan">
+  <h2> Capital City</h2> 
+   <div id = "city">
+<h2>city name</h2>
+<p>Some text about a city</p>
+</div>
+
+
+
+   </body> 
+   </html>
